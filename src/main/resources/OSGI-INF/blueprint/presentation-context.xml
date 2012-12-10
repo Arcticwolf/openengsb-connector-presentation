@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+
+    Licensed to the Austrian Association for Software Tool Integration (AASTI)
+    under one or more contributor license agreements. See the NOTICE file
+    distributed with this work for additional information regarding copyright
+    ownership. The AASTI licenses this file to you under the Apache License,
+    Version 2.0 (the "License"); you may not use this file except in compliance
+    with the License. You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd">
+
+  <reference id="transformationEngine" interface="org.openengsb.core.ekb.api.TransformationEngine" />
+  <reference id="queryInterface" interface="org.openengsb.core.ekb.api.QueryInterface" />
+  <reference id="modelRegistry" interface="org.openengsb.core.ekb.api.ModelRegistry" />
+  <reference id="persistInterface" interface="org.openengsb.core.ekb.api.PersistInterface" />
+  <reference id="domainEventInterface" interface="org.openengsb.domain.presentation.PresentationDomainEvents" />
+
+  <bean id="benchmarkHelper" class="org.openengsb.connector.presentation.benchmark.BenchmarkHelper">
+    <argument ref="transformationEngine" />
+  </bean>  
+
+  <bean id="ahyUC" class="org.openengsb.connector.presentation.story.AHyUC">
+    <argument ref="persistInterface" />
+    <argument ref="queryInterface" />
+  </bean>
+  
+  <bean id="transformUC" class="org.openengsb.connector.presentation.story.TransformationUC">
+    <argument ref="modelRegistry" />
+    <argument ref="transformationEngine" />
+  </bean>
+  
+  <service>
+    <interfaces>
+      <value>org.openengsb.core.api.ConnectorInstanceFactory</value>
+    </interfaces>
+    <service-properties>
+      <entry key="domain">
+        <value>presentation</value>
+      </entry>
+      <entry key="connector">
+        <value>presentation</value>
+      </entry>
+    </service-properties>
+    <bean class="org.openengsb.connector.presentation.ServiceInstanceFactory">
+      <argument ref="benchmarkHelper" />
+      <argument ref="ahyUC" />
+      <argument ref="transformUC" />
+    </bean>
+  </service>
+  
+  <service>
+    <interfaces>
+      <value>org.openengsb.core.api.ConnectorProvider</value>
+    </interfaces>
+    <service-properties>
+      <entry key="domain">
+        <value>presentation</value>
+      </entry>
+      <entry key="connector">
+        <value>presentation</value>
+      </entry>
+    </service-properties>
+    <bean class="org.openengsb.connector.presentation.internal.PresentationConnectorProvider">
+      <property name="id" value="presentation" />
+      <property name="bundleContext" ref="blueprintBundleContext" />
+    </bean>
+  </service>
+
+</blueprint>
